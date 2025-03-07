@@ -26,20 +26,14 @@ namespace MacroLibrary.Content.Items
             if (player.altFunctionUse == 2) 
             {
                 if (!mp.Recording)
-                {
                     mp.StartRecordMacro();
-                    NPC.NewNPC(player.GetSource_ItemUse(Item), (int)player.position.X, (int)player.position.Y - 100, NPCID.HallowBoss);
-                }
                 else
                     mp.StopRecordMacro();
             }
             else
             {
                 if (!mp.MacroOn)
-                {
                     mp.StartMacro();
-                    NPC.NewNPC(player.GetSource_ItemUse(Item), (int)player.position.X, (int)player.position.Y - 100, NPCID.HallowBoss);
-                }
                 else
                     mp.StopMacro();
             }
