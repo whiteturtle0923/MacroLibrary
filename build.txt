@@ -1,5 +1,5 @@
 displayName = Macro Library
 author = whiteturtle0923
 version = 0.1
-buildIgnore = .vs\*, Properties\*, *.csproj, *.user, obj\*, bin\*, *.config, lib\*, .gitignore, .git\*
+buildIgnore = .vscode\*, Properties\*, *.csproj, *.user, obj\*, bin\*, *.config, lib\*, .gitignore, .git\*, .editorconfig
 side = Client
