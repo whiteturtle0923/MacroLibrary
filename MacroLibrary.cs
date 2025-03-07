@@ -5,7 +5,6 @@ using Terraria.ModLoader;
 
 namespace MacroLibrary
 {
-	// Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
 	public class MacroLibrary : Mod
 	{
 		public static ModKeybind ToggleMacroKeybind {get; private set; }
@@ -15,10 +14,10 @@ namespace MacroLibrary
 
         public override void Load()
         {
-            ToggleMacroKeybind = KeybindLoader.RegisterKeybind(this, "Toggle Macro", Keys.None);
-			ToggleRecordingKeybind = KeybindLoader.RegisterKeybind(this, "Toggle Recording", Keys.None);
-			SaveMacroKeybind = KeybindLoader.RegisterKeybind(this, "Save Macro", Keys.None);
-			LoadMacroKeybind = KeybindLoader.RegisterKeybind(this, "Load Macro", Keys.None);
+            ToggleMacroKeybind = KeybindLoader.RegisterKeybind(this, "ToggleMacro", Keys.None);
+			ToggleRecordingKeybind = KeybindLoader.RegisterKeybind(this, "ToggleRecording", Keys.None);
+			SaveMacroKeybind = KeybindLoader.RegisterKeybind(this, "SaveMacro", Keys.None);
+			LoadMacroKeybind = KeybindLoader.RegisterKeybind(this, "LoadMacro", Keys.None);
         }
 
         public override void Unload()

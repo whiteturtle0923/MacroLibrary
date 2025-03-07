@@ -21,3 +21,10 @@ Items: {
 }
 
 Configs.MacroConfig.DisplayName: Macro Config
+
+Keybinds: {
+	ToggleMacro.DisplayName: Toggle Macro
+	ToggleRecording.DisplayName: Toggle Recording
+	SaveMacro.DisplayName: Save Macro
+	LoadMacro.DisplayName: Load Macro
+}
