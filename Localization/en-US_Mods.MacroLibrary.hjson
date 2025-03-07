@@ -1,0 +1,23 @@
+# This file will automatically update with entries for new content after a build and reload.
+
+Items: {
+	StartMacro: {
+		DisplayName: Toggle/Record Macro
+		Tooltip:
+			'''
+			Left click to toggle the macro on or off
+			Right click to start or stop recording
+			'''
+	}
+
+	SaveMacro: {
+		DisplayName: Save/Load Macro
+		Tooltip:
+			'''
+			Left click to save the most recently recorded macro to your files
+			Right click to load the macro from your files
+			'''
+	}
+}
+
+Configs.MacroConfig.DisplayName: Macro Config

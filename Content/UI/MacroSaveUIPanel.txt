@@ -1,0 +1,67 @@
+using Microsoft.Xna.Framework.Graphics;
+using Terraria;
+using Terraria.GameContent.UI.Elements;
+using Terraria.ModLoader;
+using Terraria.UI;
+
+namespace MacroLibrary.Content.UI
+{
+    public class MacroSaveUIPanel: UIPanel
+    {
+        internal UIPanel SaveButton;
+        internal UIPanel LoadButton;
+        internal UIText Text;
+        public override void OnInitialize()
+        {
+            Width.Set(300, 0);
+            Height.Set(300, 0);
+
+            UIText header = new("Save/Load");
+            header.HAlign = 0.5f;
+            header.Top.Set(15, 0);
+            Append(header);
+
+            SaveButton = new();
+            SaveButton.Width.Set(100, 0);
+            SaveButton.Height.Set(50, 0);
+            SaveButton.HAlign = 0.33f;
+            SaveButton.Top.Set(25, 0);
+            SaveButton.OnLeftClick += OnSaveButtonClick;
+            Append(SaveButton);
+
+            LoadButton = new();
+            LoadButton.Width.Set(100, 0);
+            LoadButton.Height.Set(50, 0);
+            LoadButton.HAlign = 0.66f;
+            LoadButton.Top.Set(25, 0);
+            LoadButton.OnLeftClick += OnLoadButtonClick;
+            Append(LoadButton);
+
+            Text = new("Click me!");
+            Text.HAlign = Text.VAlign = 0.5f;
+            SaveButton.Append(Text);
+
+            Text = new("Click me!");
+            Text.HAlign = Text.VAlign = 0.5f;
+            LoadButton.Append(Text);
+        }
+
+        protected override void DrawSelf(SpriteBatch spriteBatch)
+        {
+            base.DrawSelf(spriteBatch);
+            if (ContainsPoint(Main.MouseScreen)) {
+                Main.LocalPlayer.mouseInterface = true;
+            }
+            if (Text.IsMouseHovering || SaveButton.IsMouseHovering) {
+                Main.hoverItemName = "Click to see what happens";
+            }
+        }
+
+        private static void OnSaveButtonClick(UIMouseEvent evt, UIElement listeningElement) {
+            Main.NewText("save");
+        }
+        private static void OnLoadButtonClick(UIMouseEvent evt, UIElement listeningElement) {
+            Main.NewText("load");
+        }
+    }
+}
