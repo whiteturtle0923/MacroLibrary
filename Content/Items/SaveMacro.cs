@@ -22,15 +22,9 @@ namespace MacroLibrary.Content.Items
         {
             MacroPlayer mp = player.GetModPlayer<MacroPlayer>();
             if (player.altFunctionUse == 2)
-            {
                 mp.LoadMacro();
-                Main.NewText("Macro Loaded"); 
-            }
             else
-            {
                 mp.SaveMacro();
-                Main.NewText("Macro Saved");
-            }
             return true;
         }
     }

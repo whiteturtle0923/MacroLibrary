@@ -27,21 +27,22 @@ namespace MacroLibrary.Core
             Tuple.Create(Controls.Right, 120, 60),
         ];
         public List<bool> InstructionsEnabled = [.. Enumerable.Repeat(true, 2)];
-        public bool Up = false;
-        public bool Down = false;
-        public bool Left = false;
-        public bool Right = false;
-        public bool Jump = false;
-        public int Timer = 0;
-        public bool MacroOn = false;
-        public bool Recording = false;
-        public int RecordingTime = 0;
 
-        internal static string SaveDir => Path.Join(Main.SavePath, "Macros");
+        internal bool Up = false;
+        internal bool Down = false;
+        internal bool Left = false;
+        internal bool Right = false;
+        internal bool Jump = false;
 
+        public bool MacroOn {get; internal set;} = false;
+        public bool Recording {get; internal set;} = false;
+        public int RecordingTime {get; internal set;} = 0;
+        public int MacroTimer {get; internal set;} = 0;
+
+        public static readonly string SaveDir = Path.Join(Main.SavePath, "Macros");
         // Will be removed in the future when I get around to having multiple macros with like ui or smth
         // Currently tho idfk how to do ui
-        internal static string SavePath => Path.Join(SaveDir, "Macro.macro");
+        public static readonly string SavePath = Path.Join(SaveDir, "Macro.macro");
 
         internal Controls?[] previousControls = new Controls?[5];
         public override void PreUpdate()
@@ -74,7 +75,7 @@ namespace MacroLibrary.Core
         {
             if (!MacroOn) 
             {
-                Timer = 0;
+                MacroTimer = 0;
                 return;
             }
             Up = false;
@@ -84,7 +85,7 @@ namespace MacroLibrary.Core
             Jump = false;
             foreach (Tuple<Controls, int, int> controlSet in Instructions)
             {
-                if (controlSet.Item2 < Timer && controlSet.Item3 + controlSet.Item2 > Timer)
+                if (controlSet.Item2 < MacroTimer && controlSet.Item3 + controlSet.Item2 > MacroTimer)
                 {
                     Up = controlSet.Item1 == Controls.Up || Up;
                     Down = controlSet.Item1 == Controls.Down || Down;
@@ -92,17 +93,17 @@ namespace MacroLibrary.Core
                     Right = controlSet.Item1 == Controls.Right || Right;
                     Jump = controlSet.Item1 == Controls.Jump || Jump;
                 }
-                else if (controlSet.Item3 + controlSet.Item2 <= Timer)
+                else if (controlSet.Item3 + controlSet.Item2 <= MacroTimer)
                 {
                     InstructionsEnabled[Instructions.IndexOf(controlSet)] = false;
                 }
             }
-            Timer++;
+            MacroTimer++;
             if (!InstructionsEnabled.Contains(true))
             {
                 MacroOn = false;
                 Main.NewText("Macro Stopped");
-                Timer = 0;
+                MacroTimer = 0;
                 return;
             }
             Player.controlUp = Up;
@@ -115,18 +116,9 @@ namespace MacroLibrary.Core
         public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
         {
             if (Recording)
-            {
-                Recording = false;
-                RecordingTime = 0;
-                Array.Clear(previousControls);
-                Main.NewText("Macro Recording Stopped");
-            }
+                StopRecordMacro();
             if (MacroOn)
-            {
-                MacroOn = false;
-                InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
-                Main.NewText("Macro Stopped");
-            }
+                StopMacro();
         }
 
         public Controls?[] GetControls() =>
@@ -137,6 +129,55 @@ namespace MacroLibrary.Core
             Player.controlRight ? Controls.Right : null,
             Player.controlJump ? Controls.Jump : null,
         ];
+
+        public void StartMacro()
+        {
+            if (Recording)
+            {
+                Main.NewText("Cannot Start Macro While Recording");
+                return;
+            }
+            MacroOn = true;
+            InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
+            Main.NewText("Macro Started");
+        }
+
+        public void StopMacro()
+        {
+            MacroOn = false;
+            InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
+            Main.NewText("Macro Stopped");
+        }
+
+        public void StartRecordMacro()
+        {
+            if (MacroOn)
+            {
+                Main.NewText("Cannot Start Recording While Playing Macro");
+                return;
+            }
+            Recording = true;
+            Instructions.Clear();
+            Main.NewText("Macro Recording Started");
+        }
+
+        public void StopRecordMacro()
+        {
+            for (int i = 0; i < Instructions.Count; i++)
+            {
+                Tuple<Controls, int, int> instruction = Instructions[i];
+                if (instruction.Item3 == -1)
+                {
+                    Instructions[i] = new(instruction.Item1, instruction.Item2, RecordingTime);
+                }
+            }
+            Recording = false;
+            RecordingTime = 0;
+            Array.Clear(previousControls);
+            Instructions.Capacity = Instructions.Count;
+            InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
+            Main.NewText("Macro Recording Stopped");
+        }
 
         internal void SaveMacro()
         {
@@ -152,6 +193,7 @@ namespace MacroLibrary.Core
             if (!File.Exists(SavePath))
                 File.Create(SavePath);
             File.WriteAllBytes(SavePath, [.. fileBytes]);
+            Main.NewText("Macro Saved"); 
         }
 
         internal void LoadMacro()
@@ -178,6 +220,7 @@ namespace MacroLibrary.Core
             }
             Instructions = newInstructions;
             Instructions.Capacity = Instructions.Count; // idk why this is necessary
+            Main.NewText("Macro Loaded"); 
         }
     }
 }
