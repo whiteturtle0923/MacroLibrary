@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using log4net.Repository.Hierarchy;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameInput;

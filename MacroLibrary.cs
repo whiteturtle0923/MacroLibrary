@@ -1,5 +1,3 @@
-using System;
-using System.Runtime.ExceptionServices;
 using Microsoft.Xna.Framework.Input;
 using Terraria.ModLoader;
 
