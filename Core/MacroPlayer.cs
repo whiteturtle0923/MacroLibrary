@@ -7,6 +7,7 @@ using System.Linq;
 using log4net.Repository.Hierarchy;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameInput;
 using Terraria.ModLoader;
 
 namespace MacroLibrary.Core
@@ -111,6 +112,28 @@ namespace MacroLibrary.Core
             Player.controlLeft = Left;
             Player.controlRight = Right;
             Player.controlJump = Jump;
+        }
+
+        public override void ProcessTriggers(TriggersSet triggersSet)
+        {
+            if (MacroLibrary.ToggleMacroKeybind.JustPressed)
+            {
+                if (!MacroOn)
+                    StartMacro();
+                else
+                    StopMacro();
+            }
+            if (MacroLibrary.ToggleRecordingKeybind.JustPressed)
+            {
+                if (!Recording)
+                    StartRecordMacro();
+                else
+                    StopRecordMacro();
+            }
+            if (MacroLibrary.SaveMacroKeybind.JustPressed)
+                SaveMacro();
+            if (MacroLibrary.LoadMacroKeybind.JustPressed)
+                LoadMacro();
         }
 
         public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
