@@ -400,3 +400,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 .editorconfig
+.vscode/launch.json
+nuget.config
