@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using MacroLibrary.Core.Systems;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameInput;
@@ -42,7 +44,6 @@ namespace MacroLibrary.Core
         public static readonly string SaveDir = Path.Join(Main.SavePath, "Macros");
         // Will be removed in the future when I get around to having multiple macros with like ui or smth
         // Currently tho idfk how to do ui
-        public static readonly string SavePath = Path.Join(SaveDir, "Macro.macro");
 
         internal Controls?[] previousControls = new Controls?[5];
         public override void PreUpdate()
@@ -129,10 +130,11 @@ namespace MacroLibrary.Core
                 else
                     StopRecordMacro();
             }
-            if (MacroLibrary.SaveMacroKeybind.JustPressed)
-                SaveMacro();
-            if (MacroLibrary.LoadMacroKeybind.JustPressed)
-                LoadMacro();
+
+            if (MacroLibrary.SaveMacroMenuKeybind.JustPressed)
+            {
+                ModContent.GetInstance<SaveUISystem>().ToggleUI();
+            }
         }
 
         public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
@@ -201,8 +203,17 @@ namespace MacroLibrary.Core
             Main.NewText("Macro Recording Stopped");
         }
 
-        internal void SaveMacro()
+        private string previousSavePath = "";
+        internal void SaveMacro(string fileName)
         {
+            string SavePath = Path.Join(SaveDir, string.Join(null, fileName, ".macro"));
+            Main.NewText("test");
+            if (File.Exists(SavePath) && SavePath != previousSavePath)
+            {
+                Main.NewText("Warning: File exists at specified path and will be overwritten. Save again to confirm that you want to overwrite");
+                previousSavePath = SavePath;
+                return;
+            }
             List<byte> fileBytes = [];
             foreach (Tuple<Controls, int, int> controlSet in Instructions)
             {
@@ -212,14 +223,23 @@ namespace MacroLibrary.Core
             }
             if (!Directory.Exists(SaveDir))
                 Directory.CreateDirectory(SaveDir);
-            if (!File.Exists(SavePath))
-                File.Create(SavePath);
-            File.WriteAllBytes(SavePath, [.. fileBytes]);
+            using (FileStream stream = File.Create(SavePath))
+            {
+                stream.Write([.. fileBytes]);
+            }
             Main.NewText("Macro Saved"); 
+            if (SavePath == previousSavePath)
+                previousSavePath = "";
         }
 
-        internal void LoadMacro()
+        internal void LoadMacro(string fileName)
         {
+            string SavePath = Path.Join(SaveDir, string.Join(null, fileName, ".macro"));
+            if (!File.Exists(SavePath))
+            {
+                Main.NewText("Error: File does not exist at specified path");
+                return;
+            }
             byte[] saveData = File.ReadAllBytes(SavePath);
             List<byte[]> splitSaveData = [];
             List<Tuple<Controls, int, int>> newInstructions = [];

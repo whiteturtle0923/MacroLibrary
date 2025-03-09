@@ -9,22 +9,21 @@ Items: {
 			Right click to start or stop recording
 			'''
 	}
-
-	SaveMacro: {
-		DisplayName: Save/Load Macro
-		Tooltip:
-			'''
-			Left click to save the most recently recorded macro to your files
-			Right click to load the macro from your files
-			'''
-	}
 }
 
-Configs.MacroConfig.DisplayName: Macro Config
+Configs: {
+	MacroConfig: {
+		DisplayName: Config
+
+		UncappedMacroFileNameLength: {
+			Label: Uncapped Macro File Name Length
+			Tooltip: When enabled, uncaps the length that a macro file can be named, potentially causing it to render off the UI
+		}
+	}
+}
 
 Keybinds: {
 	ToggleMacro.DisplayName: Toggle Macro
 	ToggleRecording.DisplayName: Toggle Recording
-	SaveMacro.DisplayName: Save Macro
-	LoadMacro.DisplayName: Load Macro
+	SaveMacroMenu.DisplayName: Open/Close Save Menu
 }
