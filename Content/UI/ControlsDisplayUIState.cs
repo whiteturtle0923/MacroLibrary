@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Graphics;
 using Terraria;
 using Terraria.GameContent;
-using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
 
 namespace MacroLibrary.Content.UI
@@ -14,7 +13,6 @@ namespace MacroLibrary.Content.UI
         {
             base.DrawSelf(spriteBatch);
 
-            base.DrawSelf(spriteBatch);
 			Color color = Color.Black;
 			DynamicSpriteFont font = FontAssets.MouseText.Value; 
 			Vector2 selfPos = new(10, Main.screenHeight / 2 - 100);

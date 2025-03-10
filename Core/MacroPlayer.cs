@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using MacroLibrary.Core.Systems;
+using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameInput;
@@ -42,8 +42,9 @@ namespace MacroLibrary.Core
         public int MacroTimer {get; internal set;} = 0;
 
         public static readonly string SaveDir = Path.Join(Main.SavePath, "Macros");
-        // Will be removed in the future when I get around to having multiple macros with like ui or smth
-        // Currently tho idfk how to do ui
+        
+        public List<Vector2> RecordingPositions = [];
+        public List<Vector2> MacroPositions = [];
 
         internal Controls?[] previousControls = new Controls?[5];
         public override void PreUpdate()
@@ -61,7 +62,7 @@ namespace MacroLibrary.Core
                 {
                     int lastControlIndex = Instructions.FindLastIndex(x => x.Item1 == previousControl);
                     int lastControlStart = Instructions[lastControlIndex].Item2;
-                    Instructions[lastControlIndex] = new(previousControl, lastControlStart, RecordingTime - lastControlStart);
+                    Instructions[lastControlIndex] = new(previousControl, lastControlStart, RecordingTime - lastControlStart + 1); // the +1 is EXTREMELY important
                 }
                 else
                 {
@@ -145,6 +146,18 @@ namespace MacroLibrary.Core
                 StopMacro();
         }
 
+        public override void PostUpdate()
+        {
+            if (Recording)
+            {
+                RecordingPositions.Add(Player.position);
+            }
+            else if (MacroOn)
+            {
+                MacroPositions.Add(Player.position);
+            }
+        }
+
         public Controls?[] GetControls() =>
         [
             Player.controlUp ? Controls.Up : null,
@@ -154,6 +167,7 @@ namespace MacroLibrary.Core
             Player.controlJump ? Controls.Jump : null,
         ];
 
+        private Vector2 pos = new();
         public void StartMacro()
         {
             if (Recording)
@@ -164,6 +178,10 @@ namespace MacroLibrary.Core
             MacroOn = true;
             InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
             Main.NewText("Macro Started");
+
+            MacroPositions.Clear();
+            Player.Teleport(pos);
+            //NPC.NewNPC(Player.GetSource_FromThis(), (int)Player.position.X, (int)Player.position.Y + 200, NPCID.HallowBoss);
         }
 
         public void StopMacro()
@@ -183,6 +201,10 @@ namespace MacroLibrary.Core
             Recording = true;
             Instructions.Clear();
             Main.NewText("Macro Recording Started");
+            
+            RecordingPositions.Clear();
+            pos = Player.position;
+            //NPC.NewNPC(Player.GetSource_FromThis(), (int)Player.position.X, (int)Player.position.Y + 200, NPCID.HallowBoss);
         }
 
         public void StopRecordMacro()

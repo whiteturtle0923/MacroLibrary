@@ -1,4 +1,3 @@
-using MacroLibrary.Content.UI;
 using MacroLibrary.Core;
 using Terraria;
 using Terraria.GameContent.UI.Elements;
