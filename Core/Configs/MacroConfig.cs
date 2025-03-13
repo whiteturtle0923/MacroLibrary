@@ -9,6 +9,13 @@ namespace MacroLibrary.Core.Configs
 
         [DefaultValue(false)]
         public bool UncappedMacroFileNameLength;
-        
+        [DefaultValue(true)]
+        public bool DisplayCurrentControls;
+        [DefaultValue(true)]
+        public bool CloseUIOnStartMacro;
+        [DefaultValue(true)]
+        public bool CloseUIOnRecordMacro;
+        [DefaultValue(false)]
+        public bool DrawHitboxTrail;
     }
 }

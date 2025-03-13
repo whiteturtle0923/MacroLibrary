@@ -21,30 +21,37 @@ namespace MacroLibrary.Core
         Right,
         Jump,
     }
+
+    public struct ControlSet
+    {
+        public Controls ControlType;
+        public int StartTime;
+
+    }
+
     public class MacroPlayer: ModPlayer
     {
-        public List<Tuple<Controls, int, int>> Instructions = 
-        [
-            Tuple.Create(Controls.Left, 60, 60),
-            Tuple.Create(Controls.Right, 120, 60),
-        ];
-        public List<bool> InstructionsEnabled = [.. Enumerable.Repeat(true, 2)];
 
-        internal bool Up = false;
-        internal bool Down = false;
-        internal bool Left = false;
-        internal bool Right = false;
-        internal bool Jump = false;
+        public List<(Controls Control, int StartTime, int EndTime)> Instructions = 
+        [
+            (Controls.Left, 60, 120),
+            (Controls.Right, 120, 180),
+        ];
+        internal List<bool> InstructionsEnabled = [.. Enumerable.Repeat(true, 2)];
+
+        // these fields are for the current controls in the instructions
+        private bool Up = false;
+        private bool Down = false;
+        private bool Left = false;
+        private bool Right = false;
+        private bool Jump = false;
 
         public bool MacroOn {get; internal set;} = false;
-        public bool Recording {get; internal set;} = false;
-        public int RecordingTime {get; internal set;} = 0;
         public int MacroTimer {get; internal set;} = 0;
+        public bool Recording {get; internal set;} = false;
+        public int RecordingTimer {get; internal set;} = 0;
 
         public static readonly string SaveDir = Path.Join(Main.SavePath, "Macros");
-        
-        public List<Vector2> RecordingPositions = [];
-        public List<Vector2> MacroPositions = [];
 
         internal Controls?[] previousControls = new Controls?[5];
         public override void PreUpdate()
@@ -56,20 +63,20 @@ namespace MacroLibrary.Core
                 if (controls[i] == previousControls[i]) continue;
                 if (controls[i] is Controls control && previousControls[i] is null)
                 {
-                    Instructions.Add(new(control, RecordingTime, -1));
+                    Instructions.Add((control, RecordingTimer, -1));
                 }
                 else if (controls[i] is null && previousControls[i] is Controls previousControl)
                 {
-                    int lastControlIndex = Instructions.FindLastIndex(x => x.Item1 == previousControl);
-                    int lastControlStart = Instructions[lastControlIndex].Item2;
-                    Instructions[lastControlIndex] = new(previousControl, lastControlStart, RecordingTime - lastControlStart + 1); // the +1 is EXTREMELY important
+                    int lastControlIndex = Instructions.FindLastIndex(x => x.Control == previousControl);
+                    int lastControlStart = Instructions[lastControlIndex].StartTime;
+                    Instructions[lastControlIndex] = (previousControl, lastControlStart, RecordingTimer);
                 }
                 else
                 {
-                    Main.NewText("what the sigma (this shouldn't happen)", Microsoft.Xna.Framework.Color.Gold);
+                    Main.NewText("what the sigma (this shouldn't happen)", Color.Gold);
                 }
             }
-            RecordingTime++;
+            RecordingTimer++;
             previousControls = controls;
         }
 
@@ -85,19 +92,19 @@ namespace MacroLibrary.Core
             Left = false;
             Right = false;
             Jump = false;
-            foreach (Tuple<Controls, int, int> controlSet in Instructions)
+            foreach ((Controls Control, int StartTime, int EndTime) in Instructions)
             {
-                if (controlSet.Item2 < MacroTimer && controlSet.Item3 + controlSet.Item2 > MacroTimer)
+                if (StartTime <= MacroTimer && EndTime > MacroTimer)
                 {
-                    Up = controlSet.Item1 == Controls.Up || Up;
-                    Down = controlSet.Item1 == Controls.Down || Down;
-                    Left = controlSet.Item1 == Controls.Left || Left;
-                    Right = controlSet.Item1 == Controls.Right || Right;
-                    Jump = controlSet.Item1 == Controls.Jump || Jump;
+                    Up = Control == Controls.Up || Up;
+                    Down = Control == Controls.Down || Down;
+                    Left = Control == Controls.Left || Left;
+                    Right = Control == Controls.Right || Right;
+                    Jump = Control == Controls.Jump || Jump;
                 }
-                else if (controlSet.Item3 + controlSet.Item2 <= MacroTimer)
+                else if (EndTime <= MacroTimer)
                 {
-                    InstructionsEnabled[Instructions.IndexOf(controlSet)] = false;
+                    InstructionsEnabled[Instructions.FindIndex(x => x.Control == Control && x.StartTime == StartTime && x.EndTime == EndTime)] = false;
                 }
             }
             MacroTimer++;
@@ -117,35 +124,20 @@ namespace MacroLibrary.Core
 
         public override void ProcessTriggers(TriggersSet triggersSet)
         {
-            if (MacroLibrary.ToggleMacroKeybind.JustPressed)
-            {
-                if (!MacroOn)
-                    StartMacro();
-                else
-                    StopMacro();
-            }
-            if (MacroLibrary.ToggleRecordingKeybind.JustPressed)
-            {
-                if (!Recording)
-                    StartRecordMacro();
-                else
-                    StopRecordMacro();
-            }
-
-            if (MacroLibrary.SaveMacroMenuKeybind.JustPressed)
-            {
-                ModContent.GetInstance<SaveUISystem>().ToggleUI();
-            }
+            if (MacroLibrary.MacroMenuKeybind.JustPressed)
+                ModContent.GetInstance<MacroUISystem>().ToggleUI();
         }
 
         public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
         {
             if (Recording)
-                StopRecordMacro();
+                ToggleRecordingMacro();
             if (MacroOn)
-                StopMacro();
+                ToggleMacro();
         }
 
+        public List<Vector2> RecordingPositions = [];
+        public List<Vector2> MacroPositions = [];
         public override void PostUpdate()
         {
             if (Recording)
@@ -167,62 +159,66 @@ namespace MacroLibrary.Core
             Player.controlJump ? Controls.Jump : null,
         ];
 
-        private Vector2 pos = new();
-        public void StartMacro()
+        private Vector2 pos = new(Main.spawnTileX, Main.spawnTileY);
+        public void ToggleMacro()
         {
             if (Recording)
             {
                 Main.NewText("Cannot Start Macro While Recording");
                 return;
             }
-            MacroOn = true;
-            InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
-            Main.NewText("Macro Started");
+            if (MacroOn)
+            {
+                MacroOn = false;
+                InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
+                Main.NewText("Macro Stopped");
+            }
+            else
+            {
+                MacroOn = true;
+                InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
+                Main.NewText("Macro Started");
 
-            MacroPositions.Clear();
-            Player.Teleport(pos);
-            //NPC.NewNPC(Player.GetSource_FromThis(), (int)Player.position.X, (int)Player.position.Y + 200, NPCID.HallowBoss);
+                MacroPositions.Clear();
+                Player.Teleport(pos);
+                //NPC.NewNPC(Player.GetSource_FromThis(), (int)Player.position.X, (int)Player.position.Y + 200, NPCID.HallowBoss);
+            }
         }
 
-        public void StopMacro()
-        {
-            MacroOn = false;
-            InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
-            Main.NewText("Macro Stopped");
-        }
-
-        public void StartRecordMacro()
+        public void ToggleRecordingMacro()
         {
             if (MacroOn)
             {
                 Main.NewText("Cannot Start Recording While Playing Macro");
                 return;
             }
-            Recording = true;
-            Instructions.Clear();
-            Main.NewText("Macro Recording Started");
-            
-            RecordingPositions.Clear();
-            pos = Player.position;
-            //NPC.NewNPC(Player.GetSource_FromThis(), (int)Player.position.X, (int)Player.position.Y + 200, NPCID.HallowBoss);
-        }
-
-        public void StopRecordMacro()
-        {
-            for (int i = 0; i < Instructions.Count; i++)
+            if (Recording)
             {
-                Tuple<Controls, int, int> instruction = Instructions[i];
-                if (instruction.Item3 == -1)
+                for (int i = 0; i < Instructions.Count; i++)
                 {
-                    Instructions[i] = new(instruction.Item1, instruction.Item2, RecordingTime);
+                    (Controls Control, int StartTime, int EndTime) = Instructions[i];
+                    if (EndTime == -1)
+                    {
+                        Instructions[i] = (Control, StartTime, RecordingTimer);
+                    }
                 }
+                Recording = false;
+                RecordingTimer = 0;
+                Array.Clear(previousControls);
+                Instructions.Capacity = Instructions.Count;
+                InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
+                Main.NewText("Macro Recording Stopped");
             }
-            Recording = false;
-            RecordingTime = 0;
-            Array.Clear(previousControls);
-            Instructions.Capacity = Instructions.Count;
-            InstructionsEnabled = [.. Enumerable.Repeat(true, Instructions.Capacity)];
-            Main.NewText("Macro Recording Stopped");
+            else
+            {
+                Recording = true;
+                Instructions.Clear();
+                Main.NewText("Macro Recording Started");
+                
+                RecordingPositions.Clear();
+                pos = Player.position;
+                //NPC.NewNPC(Player.GetSource_FromThis(), (int)Player.position.X, (int)Player.position.Y + 200, NPCID.HallowBoss);
+            }
         }
 
         private string previousSavePath = "";
@@ -237,11 +233,11 @@ namespace MacroLibrary.Core
                 return;
             }
             List<byte> fileBytes = [];
-            foreach (Tuple<Controls, int, int> controlSet in Instructions)
+            foreach ((Controls Control, int StartTime, int EndTime) in Instructions)
             {
-                fileBytes.Add((byte)controlSet.Item1);
-                fileBytes.AddRange(BitConverter.GetBytes(controlSet.Item2));
-                fileBytes.AddRange(BitConverter.GetBytes(controlSet.Item3));
+                fileBytes.Add((byte)Control);
+                fileBytes.AddRange(BitConverter.GetBytes(StartTime));
+                fileBytes.AddRange(BitConverter.GetBytes(EndTime));
             }
             if (!Directory.Exists(SaveDir))
                 Directory.CreateDirectory(SaveDir);
@@ -264,7 +260,7 @@ namespace MacroLibrary.Core
             }
             byte[] saveData = File.ReadAllBytes(SavePath);
             List<byte[]> splitSaveData = [];
-            List<Tuple<Controls, int, int>> newInstructions = [];
+            List<(Controls Control, int StartTime, int EndTime)> newInstructions = [];
             byte[] tempByteArray;
             for (int i = 0; i < saveData.Length; i += 9)
             {
@@ -275,7 +271,7 @@ namespace MacroLibrary.Core
             foreach (byte[] controlSet in splitSaveData)
             {
                 newInstructions.Add(
-                    new(
+                    (
                         (Controls)controlSet[0],
                         BitConverter.ToInt32(new ArraySegment<byte>(controlSet, 1, 4)),
                         BitConverter.ToInt32(new ArraySegment<byte>(controlSet, 5, 4))

@@ -6,7 +6,7 @@ using Terraria.UI;
 namespace MacroLibrary.Content.UI
 {
     // Totally not borrowed from ExampleMod lol
-    public class SaveUIPanel: UIPanel
+    public class MacroUIPanel: UIPanel
     {
 		private Vector2 offset;
 		private bool dragging;

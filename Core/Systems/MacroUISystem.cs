@@ -7,27 +7,27 @@ using Terraria.UI;
 
 namespace MacroLibrary.Core.Systems
 {
-    public class SaveUISystem: ModSystem
+    public class MacroUISystem: ModSystem
     {
-        internal SaveUIState saveUIState;
-        private UserInterface saveUIInterface;
+        internal MacroUIState macroUIState;
+        private UserInterface macroUIInterface;
 
         public override void Load()
         {
-            saveUIState = new();
-            saveUIState.Activate();
-            saveUIInterface = new();
+            macroUIState = new();
+            macroUIState.Activate();
+            macroUIInterface = new();
         }
 
         public override void Unload()
         {
-            saveUIState = null;
+            macroUIState = null;
         }
 
         public override void UpdateUI(GameTime gameTime)
         {
-            if (saveUIInterface?.CurrentState != null)
-                saveUIInterface?.Update(gameTime);
+            if (macroUIInterface?.CurrentState != null)
+                macroUIInterface?.Update(gameTime);
         }
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
@@ -36,11 +36,11 @@ namespace MacroLibrary.Core.Systems
             if (mouseTextIndex != -1)
             {
                 layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
-                    "Macro Library: Save UI",
+                    "Macro Library: Macro UI",
                     delegate
                     {
-                        if (saveUIInterface?.CurrentState != null)
-                            saveUIInterface.Draw(Main.spriteBatch, new GameTime());
+                        if (macroUIInterface?.CurrentState != null)
+                            macroUIInterface.Draw(Main.spriteBatch, new GameTime());
                         return true;
                     },
                     InterfaceScaleType.UI)
@@ -50,10 +50,10 @@ namespace MacroLibrary.Core.Systems
 
         public void ToggleUI() 
         {
-            if (saveUIInterface?.CurrentState == null)
-			    saveUIInterface?.SetState(saveUIState);
+            if (macroUIInterface?.CurrentState == null)
+			    macroUIInterface?.SetState(macroUIState);
             else 
-                saveUIInterface?.SetState(null);
+                macroUIInterface?.SetState(null);
 		}
     }
 }

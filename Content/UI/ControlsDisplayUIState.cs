@@ -1,8 +1,10 @@
+using MacroLibrary.Core.Configs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Graphics;
 using Terraria;
 using Terraria.GameContent;
+using Terraria.ModLoader;
 using Terraria.UI;
 
 namespace MacroLibrary.Content.UI
@@ -12,8 +14,9 @@ namespace MacroLibrary.Content.UI
         protected override void DrawSelf(SpriteBatch spriteBatch)
         {
             base.DrawSelf(spriteBatch);
-
-			Color color = Color.Black;
+            
+            if (!ModContent.GetInstance<MacroConfig>().DisplayCurrentControls) return;
+			Color color = Color.HotPink;
 			DynamicSpriteFont font = FontAssets.MouseText.Value; 
 			Vector2 selfPos = new(10, Main.screenHeight / 2 - 100);
 			if (Main.LocalPlayer.controlUp)

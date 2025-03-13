@@ -1,16 +1,4 @@
 # This file will automatically update with entries for new content after a build and reload.
-
-Items: {
-	StartMacro: {
-		DisplayName: Toggle/Record Macro
-		Tooltip:
-			'''
-			Left click to toggle the macro on or off
-			Right click to start or stop recording
-			'''
-	}
-}
-
 Configs: {
 	MacroConfig: {
 		DisplayName: Config
@@ -19,11 +7,27 @@ Configs: {
 			Label: Uncapped Macro File Name Length
 			Tooltip: When enabled, uncaps the length that a macro file can be named, potentially causing it to render off the UI
 		}
+
+		DisplayCurrentControls: {
+			Label: Display Current Controls
+			Tooltip: When enabled, text displaying current controls is rendered on the side of the screen
+		}
+
+		CloseUIOnStartMacro: {
+			Label: Close Macro UI On Starting Macro
+			Tooltip: When enabled, the macro UI will close when the macro is started
+		}
+
+		CloseUIOnRecordMacro: {
+			Label: Close Macro UI On Starting Recording
+			Tooltip: When enabled, the macro UI will close when macro recording is started
+		}
+
+		DrawHitboxTrail: {
+			Label: Draw Hitbox Trail
+			Tooltip: When enabled, draws a hitbox trail that displays during usage and/or recording of a macro
+		}
 	}
 }
 
-Keybinds: {
-	ToggleMacro.DisplayName: Toggle Macro
-	ToggleRecording.DisplayName: Toggle Recording
-	SaveMacroMenu.DisplayName: Open/Close Save Menu
-}
+Keybinds.MacroMenu.DisplayName: Open/Close Macro Menu

@@ -12,24 +12,18 @@ namespace MacroLibrary
 {
 	public class MacroLibrary : Mod
 	{
-		public static ModKeybind ToggleMacroKeybind {get; private set; }
-		public static ModKeybind ToggleRecordingKeybind {get; private set; }
-		public static ModKeybind SaveMacroMenuKeybind {get; private set; }
+		public static ModKeybind MacroMenuKeybind {get; private set; }
 
-		Hook hook;
+		//Hook hook;
         public override void Load()
         {
-            ToggleMacroKeybind = KeybindLoader.RegisterKeybind(this, "ToggleMacro", Keys.None);
-			ToggleRecordingKeybind = KeybindLoader.RegisterKeybind(this, "ToggleRecording", Keys.None);
-			SaveMacroMenuKeybind = KeybindLoader.RegisterKeybind(this, "SaveMacroMenu", Keys.None);
+			MacroMenuKeybind = KeybindLoader.RegisterKeybind(this, "MacroMenu", Keys.None);
 			//hook = new(typeof(RecipeLoader).GetMethod("ConsumeIngredient", BindingFlags.Public | BindingFlags.Static), FullyDecraftPotions);
         }
 
         public override void Unload()
         {
-            ToggleMacroKeybind = null;
-			ToggleRecordingKeybind = null;
-			SaveMacroMenuKeybind = null;
+			MacroMenuKeybind = null;
 			//hook.Dispose();
         }
 		/*
